@@ -22,11 +22,11 @@ export const DualReconciliationView: React.FC<DualReconciliationViewProps> = ({
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6 print:hidden">
+    <div className="w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-6 print:hidden print-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-4">
         <div>
-          <div className="flex items-center space-x-3">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
               Vista de Conciliación Dual 1:1
             </h3>
             <Badge variant={summary.overallSeverity}>
@@ -37,7 +37,7 @@ export const DualReconciliationView: React.FC<DualReconciliationViewProps> = ({
                 : `Alerta Crítica (${summary.criticalIssuesCount} desvíos materiales)`}
             </Badge>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Expediente: <span className="font-mono font-semibold">{dossierNumber}</span> • Comparativa entre Origen y Autoridad Aduanera
           </p>
         </div>
@@ -111,57 +111,62 @@ export const DualReconciliationView: React.FC<DualReconciliationViewProps> = ({
       </div>
 
       {/* Partida por Partida 1:1 Comparative Table */}
-      <div className="overflow-x-auto print:overflow-visible rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">
-            <tr>
-              <th className="py-3 px-3">Seq</th>
-              <th className="py-3 px-3">Partida Factura</th>
-              <th className="py-3 px-3">Partida DUA</th>
-              <th className="py-3 px-3">FOB Factura</th>
-              <th className="py-3 px-3">FOB DUA</th>
-              <th className="py-3 px-3">Diferencia FOB</th>
-              <th className="py-3 px-3">Flete Asig.</th>
-              <th className="py-3 px-3">Seguro Asig.</th>
-              <th className="py-3 px-3 text-center">Estado Cotejo</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-            {items.map(it => {
-              const hasDiff = Math.abs(it.fobDiscrepancy) > 0.01;
-              return (
-                <tr
-                  key={it.itemSequence}
-                  className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${
-                    it.itemSeverity === 'red' ? 'bg-rose-50/20 dark:bg-rose-950/10' : ''
-                  }`}
-                >
-                  <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-slate-300">#{it.itemSequence}</td>
-                  <td className="py-2.5 px-3 text-slate-900 dark:text-white">{it.invoiceHsCode}</td>
-                  <td className="py-2.5 px-3">
-                    <span className={it.hsCodeMatches ? 'text-slate-700 dark:text-slate-300' : 'text-rose-600 font-bold'}>
-                      {it.duaHsCode}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3">{formatCurrency(it.invoiceTotalFob)}</td>
-                  <td className="py-2.5 px-3">{formatCurrency(it.duaTotalFob)}</td>
-                  <td className="py-2.5 px-3">
-                    <span className={hasDiff ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
-                      {it.fobDiscrepancy > 0 ? `+${it.fobDiscrepancy.toFixed(2)}` : it.fobDiscrepancy.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3">{formatCurrency(it.proratedFreight)}</td>
-                  <td className="py-2.5 px-3">{formatCurrency(it.proratedInsurance)}</td>
-                  <td className="py-2.5 px-3 text-center">
-                    <Badge variant={it.itemSeverity}>
-                      {it.itemSeverity.toUpperCase()}
-                    </Badge>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div>
+        <p className="block sm:hidden text-[11px] text-slate-400 mb-1">
+          ↔ Desliza la tabla horizontalmente para ver todas las columnas
+        </p>
+        <div className="w-full overflow-x-auto overscroll-x-contain rounded-lg border border-slate-200 dark:border-slate-800 print:overflow-visible">
+          <table className="w-full text-left text-xs whitespace-nowrap sm:whitespace-normal">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">
+              <tr>
+                <th className="py-3 px-3">Seq</th>
+                <th className="py-3 px-3">Partida Factura</th>
+                <th className="py-3 px-3">Partida DUA</th>
+                <th className="py-3 px-3">FOB Factura</th>
+                <th className="py-3 px-3">FOB DUA</th>
+                <th className="py-3 px-3">Diferencia FOB</th>
+                <th className="py-3 px-3">Flete Asig.</th>
+                <th className="py-3 px-3">Seguro Asig.</th>
+                <th className="py-3 px-3 text-center">Estado Cotejo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+              {items.map(it => {
+                const hasDiff = Math.abs(it.fobDiscrepancy) > 0.01;
+                return (
+                  <tr
+                    key={it.itemSequence}
+                    className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${
+                      it.itemSeverity === 'red' ? 'bg-rose-50/20 dark:bg-rose-950/10' : ''
+                    }`}
+                  >
+                    <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-slate-300">#{it.itemSequence}</td>
+                    <td className="py-2.5 px-3 text-slate-900 dark:text-white">{it.invoiceHsCode}</td>
+                    <td className="py-2.5 px-3">
+                      <span className={it.hsCodeMatches ? 'text-slate-700 dark:text-slate-300' : 'text-rose-600 font-bold'}>
+                        {it.duaHsCode}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">{formatCurrency(it.invoiceTotalFob)}</td>
+                    <td className="py-2.5 px-3">{formatCurrency(it.duaTotalFob)}</td>
+                    <td className="py-2.5 px-3">
+                      <span className={hasDiff ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
+                        {it.fobDiscrepancy > 0 ? `+${it.fobDiscrepancy.toFixed(2)}` : it.fobDiscrepancy.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">{formatCurrency(it.proratedFreight)}</td>
+                    <td className="py-2.5 px-3">{formatCurrency(it.proratedInsurance)}</td>
+                    <td className="py-2.5 px-3 text-center">
+                      <Badge variant={it.itemSeverity}>
+                        {it.itemSeverity.toUpperCase()}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -408,15 +408,15 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* State Switcher Bar (Interactive Controls - Hidden on Print) */}
+      {/* State Switcher Bar (Interactive Controls - Mobile Scrollable & Hidden on Print) */}
       <div className="bg-slate-100/80 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 py-2 print:hidden state-switcher">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-500">Demostración de Estados UI:</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
+            <span className="font-semibold text-slate-500 shrink-0">Demostración de Estados UI:</span>
             <button
               type="button"
               onClick={() => setActiveViewState('data')}
-              className={`px-2.5 py-1 rounded border text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded border text-xs font-medium transition shrink-0 ${
                 activeViewState === 'data'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
@@ -427,7 +427,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setActiveViewState('loading')}
-              className={`px-2.5 py-1 rounded border text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded border text-xs font-medium transition shrink-0 ${
                 activeViewState === 'loading'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
@@ -438,7 +438,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setActiveViewState('empty')}
-              className={`px-2.5 py-1 rounded border text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded border text-xs font-medium transition shrink-0 ${
                 activeViewState === 'empty'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
@@ -449,7 +449,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setActiveViewState('error')}
-              className={`px-2.5 py-1 rounded border text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded border text-xs font-medium transition shrink-0 ${
                 activeViewState === 'error'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
@@ -459,14 +459,14 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="text-[11px] text-slate-500 font-mono">
+          <div className="text-[11px] text-slate-500 font-mono shrink-0">
             SLA de cálculo: <span className="font-bold text-emerald-600">{currentReport.calculationDurationMs} ms</span> • Hash: {currentReport.auditHashSha256.substring(0, 12)}...
           </div>
         </div>
       </div>
 
-      {/* Main Interactive Executive Dashboard */}
-      <main className="flex-1 py-8 print:py-0 print:m-0">
+      {/* Main Interactive Executive Dashboard with mobile safety padding */}
+      <main className="flex-1 py-6 sm:py-8 pb-24 sm:pb-8 print:py-0 print:m-0">
         <ExecutiveDashboard
           initialState={activeViewState}
           initialReport={currentReport}

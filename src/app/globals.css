@@ -7,6 +7,15 @@
   }
 }
 
+/* Utilitario Mobile-First: Ocultar barras de scroll sin perder funcionalidad táctil */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ==============================================================================
    PRINT STYLESHEET — ACTA OFICIAL DE CONCILIACIÓN ADUANERA (FORMATO A4)
    ============================================================================== */

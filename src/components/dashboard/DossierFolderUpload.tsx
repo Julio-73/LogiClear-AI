@@ -92,7 +92,7 @@ export const DossierFolderUpload: React.FC<DossierFolderUploadProps> = ({
 
   return (
     <div className="w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             Carga de Expediente de Importación
@@ -101,7 +101,7 @@ export const DossierFolderUpload: React.FC<DossierFolderUploadProps> = ({
             Arrastra la carpeta o selecciona la Factura Comercial, BL, DUA y comprobantes de gastos locales.
           </p>
         </div>
-        <span className="text-xs bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 font-semibold px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
+        <span className="w-fit inline-flex items-center whitespace-nowrap text-xs px-2.5 py-1 rounded-full shrink-0 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
           OCR Multimodal Zero-Hallucination
         </span>
       </div>

@@ -330,8 +330,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
-      {/* Top Global Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      {/* Top Global Navigation Bar (Hidden on Print) */}
+      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-indigo-500/20">
@@ -408,8 +408,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* State Switcher Bar (Interactive Controls) */}
-      <div className="bg-slate-100/80 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 py-2">
+      {/* State Switcher Bar (Interactive Controls - Hidden on Print) */}
+      <div className="bg-slate-100/80 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 py-2 print:hidden state-switcher">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-slate-500">Demostración de Estados UI:</span>
@@ -466,7 +466,7 @@ export default function HomePage() {
       </div>
 
       {/* Main Interactive Executive Dashboard */}
-      <main className="flex-1 py-8">
+      <main className="flex-1 py-8 print:py-0 print:m-0">
         <ExecutiveDashboard
           initialState={activeViewState}
           initialReport={currentReport}
@@ -474,8 +474,8 @@ export default function HomePage() {
         />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-400">
+      {/* Footer (Hidden on Print) */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-400 print:hidden">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© 2026 LogiClear AI. Plataforma B2B Enterprise — Conciliación de Importaciones & Landed Cost Determinista.</p>
           <p className="font-mono text-[11px]">Certificación Enterprise V4.1 • PostgreSQL RLS • Stripe Billing SAQ A</p>

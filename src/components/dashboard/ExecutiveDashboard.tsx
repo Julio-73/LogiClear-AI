@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { MetricsOverview } from './MetricsOverview';
 import { DossierFolderUpload, UploadedFileItem } from './DossierFolderUpload';
 import { DualReconciliationView } from './DualReconciliationView';
 import { LandedCostTable } from './LandedCostTable';
+import { FormalConciliationActPrintView } from '@/components/print/FormalConciliationActPrintView';
 import { ReconciliationReport } from '@/lib/engine/core_reconciliation_engine';
 
 export type DashboardViewState = 'loading' | 'empty' | 'error' | 'data';
@@ -26,6 +27,17 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   const [viewState, setViewState] = useState<DashboardViewState>(initialState);
   const [report, setReport] = useState<ReconciliationReport | null>(initialReport);
   const [errorText, setErrorText] = useState<string>(errorMessage);
+
+  // Sync internal report when initialReport changes from parent selector
+  useEffect(() => {
+    if (initialReport) {
+      setReport(initialReport);
+    }
+  }, [initialReport]);
+
+  useEffect(() => {
+    setViewState(initialState);
+  }, [initialState]);
 
   const handleRetry = () => {
     setViewState('loading');
@@ -61,7 +73,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'loading') {
     return (
-      <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+      <div className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <Skeleton className="h-8 w-64" />
@@ -95,7 +107,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'error') {
     return (
-      <div className="w-full max-w-2xl mx-auto p-12 text-center my-12 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm space-y-5">
+      <div className="w-full max-w-2xl mx-auto p-12 text-center my-12 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm space-y-5 print:hidden">
         <div className="w-16 h-16 mx-auto bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-full flex items-center justify-center text-3xl">
           ⚠️
         </div>
@@ -125,7 +137,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'empty' || !report) {
     return (
-      <div className="w-full max-w-5xl mx-auto p-6 space-y-8">
+      <div className="w-full max-w-5xl mx-auto p-6 space-y-8 print:hidden">
         <div className="text-center py-10 space-y-3">
           <span className="text-4xl">📦</span>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -142,59 +154,74 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   }
 
   // ============================================================================
-  // 4. STATE: DATA (Complete Executive Dashboard)
+  // 4. STATE: DATA (Complete Executive Dashboard & Print View)
   // ============================================================================
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              LogiClear AI
-            </h1>
-            <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
-              Auditoría Determinista v1.0
-            </span>
+    <>
+      {/* 4.A VISTA INTERACTIVA EN PANTALLA (OCULTA AL IMPRIMIR) */}
+      <div className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden">
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+          <div>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                LogiClear AI
+              </h1>
+              <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                Auditoría Determinista v1.0
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Hash Criptográfico de Auditoría: <span className="font-mono">{report.auditHashSha256.substring(0, 24)}...</span>
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Hash Criptográfico de Auditoría: <span className="font-mono">{report.auditHashSha256.substring(0, 24)}...</span>
-          </p>
+
+          <div className="flex items-center space-x-3 print:hidden">
+            <button
+              type="button"
+              onClick={() => setViewState('empty')}
+              className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            >
+              Nuevo Expediente
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm flex items-center space-x-1.5"
+            >
+              <span>📄</span>
+              <span>Exportar Acta de Conciliación</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={() => setViewState('empty')}
-            className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-          >
-            Nuevo Expediente
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
-          >
-            Exportar Acta de Conciliación
-          </button>
+        {/* 1. Executive Metrics Overview */}
+        <MetricsOverview summary={report.summary} />
+
+        {/* 2. Drag-and-Drop Ingestion Drawer (Oculto en Impresión) */}
+        <div className="print:hidden">
+          <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
         </div>
+
+        {/* 3. Dual 1:1 Comparative Reconciliation View */}
+        <DualReconciliationView
+          summary={report.summary}
+          items={report.items}
+          dossierNumber={report.dossierNumber}
+        />
+
+        {/* 4. Full Landed Cost Breakdown Table */}
+        <LandedCostTable items={report.items} />
       </div>
 
-      {/* 1. Executive Metrics Overview */}
-      <MetricsOverview summary={report.summary} />
-
-      {/* 2. Drag-and-Drop Ingestion Drawer */}
-      <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
-
-      {/* 3. Dual 1:1 Comparative Reconciliation View */}
-      <DualReconciliationView
-        summary={report.summary}
-        items={report.items}
-        dossierNumber={report.dossierNumber}
+      {/* 4.B VISTA DE IMPRESIÓN FORMAL CERTIFICADA (VISIBLE ÚNICAMENTE EN PRINT / PDF) */}
+      <FormalConciliationActPrintView
+        report={report}
+        companyName="Importaciones Andinas S.A.C."
+        companyRuc="20601234567"
+        customsAgentName="Scharff Logística & Agente de Aduanas S.A."
+        customsAgentRegister="SUNAT-AG-04112"
       />
-
-      {/* 4. Full Landed Cost Breakdown Table */}
-      <LandedCostTable items={report.items} />
-    </div>
+    </>
   );
 };

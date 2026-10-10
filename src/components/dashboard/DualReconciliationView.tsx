@@ -111,7 +111,7 @@ export const DualReconciliationView: React.FC<DualReconciliationViewProps> = ({
       </div>
 
       {/* Partida por Partida 1:1 Comparative Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="overflow-x-auto print:overflow-visible rounded-lg border border-slate-200 dark:border-slate-800">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider">
             <tr>

@@ -73,7 +73,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'loading') {
     return (
-      <div className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden">
+      <div className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden print-hidden">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <Skeleton className="h-8 w-64" />
@@ -107,7 +107,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'error') {
     return (
-      <div className="w-full max-w-2xl mx-auto p-12 text-center my-12 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm space-y-5 print:hidden">
+      <div className="w-full max-w-2xl mx-auto p-12 text-center my-12 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm space-y-5 print:hidden print-hidden">
         <div className="w-16 h-16 mx-auto bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-full flex items-center justify-center text-3xl">
           ⚠️
         </div>
@@ -137,7 +137,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   if (viewState === 'empty' || !report) {
     return (
-      <div className="w-full max-w-5xl mx-auto p-6 space-y-8 print:hidden">
+      <div className="w-full max-w-5xl mx-auto p-6 space-y-8 print:hidden print-hidden">
         <div className="text-center py-10 space-y-3">
           <span className="text-4xl">📦</span>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -159,7 +159,10 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   return (
     <>
       {/* 4.A VISTA INTERACTIVA EN PANTALLA (OCULTA AL IMPRIMIR) */}
-      <div className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden">
+      <div
+        id="screen-dashboard-container"
+        className="w-full max-w-7xl mx-auto p-6 space-y-6 print:hidden print-hidden interactive-dashboard"
+      >
         {/* Top Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
           <div>

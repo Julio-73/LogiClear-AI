@@ -28,12 +28,19 @@
   /* Ocultar elementos interactivos de pantalla */
   .print\:hidden,
   .print-hidden,
+  .hidden-on-print,
+  #screen-dashboard-container,
+  #screen-dashboard-container *,
   header,
   footer,
   nav,
   button,
   .state-switcher,
-  .upload-drawer {
+  .upload-drawer,
+  .interactive-dashboard,
+  div[class*="fixed bottom-0"],
+  [class*="VARIANZA FOB TOTAL"],
+  [class*="Varianza FOB Total"] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
@@ -45,7 +52,8 @@
   }
 
   /* Mostrar la vista de impresión formal */
-  .print-only {
+  .print-only,
+  .print\:block {
     display: block !important;
   }
 

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_type": "PaymentResultContract",
+  "skill_id": "payment-billing-specialist",
+  "version": "2.0.0",
+  "timestamp": "2026-10-09T22:17:30Z",
+  "project": "LogiClear AI",
+  "verdict": "GO",
+  "tiers_configured": [
+    {
+      "tier": "starter",
+      "price_usd_monthly": 99.00,
+      "quota_shipments": 50
+    },
+    {
+      "tier": "enterprise_pro",
+      "price_usd_monthly": 349.00,
+      "quota_shipments": "unlimited"
+    }
+  ],
+  "security_specifications": {
+    "webhook_hmac_algorithm": "SHA-256",
+    "timing_safe_comparison": true,
+    "replay_attack_window_sec": 300,
+    "pci_dss_compliance": "SAQ A (Zero cardholder data touch)"
+  },
+  "artifacts_produced": [
+    "src/lib/billing/stripe_billing_config.ts",
+    "src/lib/billing/webhook_handler.ts"
+  ],
+  "quality_gates": [
+    {
+      "gate": "GATE 1 — Cryptographic HMAC Signature Verification Gate",
+      "status": "VERIFIED",
+      "evidence": "StripeWebhookHandler validates header signature using timingSafeEqual buffer comparison."
+    },
+    {
+      "gate": "GATE 2 — Replay Attack Prevention Gate",
+      "status": "VERIFIED",
+      "evidence": "Timestamps exceeding 300-second tolerance window are strictly rejected."
+    },
+    {
+      "gate": "GATE 3 — Webhook Idempotency Isolation Gate",
+      "status": "VERIFIED",
+      "evidence": "IdempotencyStore deduplicates incoming webhook events; duplicate delivery returns duplicate_ignored with zero side-effects."
+    },
+    {
+      "gate": "GATE 4 — Metered Quota & Entitlements Gate",
+      "status": "VERIFIED",
+      "evidence": "checkTenantQuota function enforces 50 shipments threshold on Starter tier and infinite capacity on Enterprise Pro."
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_type": "GenAIResultContract",
+  "skill_id": "genai-ai-agent-architect",
+  "version": "4.1.0",
+  "timestamp": "2026-10-09T22:14:00Z",
+  "project": "LogiClear AI",
+  "verdict": "GO",
+  "calibration": {
+    "temperature": 0.0,
+    "hallucination_tolerance": 0.0,
+    "model_target": "gemini-1.5-pro-customs-vision",
+    "required_fields_enforced": [
+      "incoterm",
+      "currency",
+      "hsCode",
+      "totalFobDeclared",
+      "totalNetWeightKg"
+    ]
+  },
+  "artifacts_produced": [
+    "src/lib/genai/extraction_schemas.ts",
+    "src/lib/genai/extraction_pipeline.ts"
+  ],
+  "quality_gates": [
+    {
+      "gate": "GATE 1 — Zero-Hallucination Temperature Calibration Gate",
+      "status": "VERIFIED",
+      "evidence": "Strict temperature = 0.0 enforced in pipeline options and runtime constructor."
+    },
+    {
+      "gate": "GATE 2 — Grounding & Arithmetic Verification Gate",
+      "status": "VERIFIED",
+      "evidence": "Zod superRefine hooks actively assert item sums against declared totals (diff <= 0.05)."
+    },
+    {
+      "gate": "GATE 3 — Incoterm & Currency Strictness Gate",
+      "status": "VERIFIED",
+      "evidence": "IncotermEnum (2020 standards) and CurrencyEnum validate permitted codes exclusively."
+    },
+    {
+      "gate": "GATE 4 — Cryptographic Provenance Gate",
+      "status": "VERIFIED",
+      "evidence": "SHA-256 payload checksum calculated on every raw ingested document."
+    },
+    {
+      "gate": "GATE 5 — RFC 7807 Structured Diagnostic Reporting Gate",
+      "status": "VERIFIED",
+      "evidence": "Granular field, issue and code diagnostics returned on validation rejection."
+    }
+  ]
+}

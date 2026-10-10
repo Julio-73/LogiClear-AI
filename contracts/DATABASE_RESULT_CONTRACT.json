@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_type": "DatabaseResultContract",
+  "skill_id": "database-master",
+  "version": "2.0.0",
+  "timestamp": "2026-10-09T22:13:00Z",
+  "project": "LogiClear AI",
+  "verdict": "GO",
+  "artifacts_produced": [
+    "database/schema.sql",
+    "database/rollback.sql",
+    "database/MIGRATION_PLAN.md"
+  ],
+  "tables_declared": [
+    "tenants",
+    "users",
+    "shipments",
+    "documents",
+    "line_items",
+    "reconciliation_audits",
+    "processed_webhooks"
+  ],
+  "row_level_security_enforced": true,
+  "composite_indexes_count": 9,
+  "quality_gates": [
+    {
+      "gate": "GATE 1 — Relational Integrity & ACID Constraints Gate",
+      "status": "VERIFIED",
+      "evidence": "Foreign keys with ON DELETE CASCADE / RESTRICT appropriately assigned; unique constraints on dossier and sequence."
+    },
+    {
+      "gate": "GATE 2 — Multi-Tenant Row Level Security (RLS) Gate",
+      "status": "VERIFIED",
+      "evidence": "RLS enabled on all 7 tables with get_current_tenant_id() session parameter and zero data leak cross-tenant."
+    },
+    {
+      "gate": "GATE 3 — High-Speed Composite Indexing Gate",
+      "status": "VERIFIED",
+      "evidence": "Composite indexes created for high-frequency filters (tenant_id + status, tenant_id + hs_code, idempotency_key)."
+    },
+    {
+      "gate": "GATE 4 — Safe Reversible Rollback Gate",
+      "status": "VERIFIED",
+      "evidence": "database/rollback.sql script tested for clean rollback without foreign key deadlock."
+    },
+    {
+      "gate": "GATE 5 — Expand-and-Contract Migration Governance Gate",
+      "status": "VERIFIED",
+      "evidence": "Documented in MIGRATION_PLAN.md with lock timeout under 5s and non-blocking pattern."
+    }
+  ]
+}

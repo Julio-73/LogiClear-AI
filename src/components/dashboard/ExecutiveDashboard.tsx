@@ -1,0 +1,200 @@
+import React, { useState } from 'react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { MetricsOverview } from './MetricsOverview';
+import { DossierFolderUpload, UploadedFileItem } from './DossierFolderUpload';
+import { DualReconciliationView } from './DualReconciliationView';
+import { LandedCostTable } from './LandedCostTable';
+import { ReconciliationReport } from '@/lib/engine/core_reconciliation_engine';
+
+export type DashboardViewState = 'loading' | 'empty' | 'error' | 'data';
+
+export interface ExecutiveDashboardProps {
+  initialState?: DashboardViewState;
+  initialReport?: ReconciliationReport | null;
+  errorMessage?: string;
+  onRetry?: () => void;
+  onProcessFiles?: (files: UploadedFileItem[]) => Promise<void>;
+}
+
+export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
+  initialState = 'data',
+  initialReport = null,
+  errorMessage = 'Ocurrió un error inesperado al procesar el expediente aduanero.',
+  onRetry,
+  onProcessFiles
+}) => {
+  const [viewState, setViewState] = useState<DashboardViewState>(initialState);
+  const [report, setReport] = useState<ReconciliationReport | null>(initialReport);
+  const [errorText, setErrorText] = useState<string>(errorMessage);
+
+  const handleRetry = () => {
+    setViewState('loading');
+    if (onRetry) {
+      onRetry();
+    } else {
+      setTimeout(() => {
+        setViewState(report ? 'data' : 'empty');
+      }, 500);
+    }
+  };
+
+  const handleFilesSubmitted = async (files: UploadedFileItem[]) => {
+    setViewState('loading');
+    try {
+      if (onProcessFiles) {
+        await onProcessFiles(files);
+      } else {
+        // Fallback simulation if no external handler injected
+        setTimeout(() => {
+          setViewState(report ? 'data' : 'empty');
+        }, 800);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al procesar archivos';
+      setErrorText(msg);
+      setViewState('error');
+    }
+  };
+
+  // ============================================================================
+  // 1. STATE: LOADING (Skeletons)
+  // ============================================================================
+  if (viewState === 'loading') {
+    return (
+      <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </div>
+
+        {/* Metric Skeletons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+        </div>
+
+        {/* Dual View Skeleton */}
+        <Skeleton className="h-72 rounded-xl" />
+
+        {/* Table Skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 2. STATE: ERROR (Retry Screen)
+  // ============================================================================
+  if (viewState === 'error') {
+    return (
+      <div className="w-full max-w-2xl mx-auto p-12 text-center my-12 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm space-y-5">
+        <div className="w-16 h-16 mx-auto bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-full flex items-center justify-center text-3xl">
+          ⚠️
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+            Fallo en el Procesamiento del Expediente
+          </h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-mono">
+            {errorText}
+          </p>
+        </div>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-sm"
+          >
+            Reintentar Conciliación
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 3. STATE: EMPTY (No dossier loaded)
+  // ============================================================================
+  if (viewState === 'empty' || !report) {
+    return (
+      <div className="w-full max-w-5xl mx-auto p-6 space-y-8">
+        <div className="text-center py-10 space-y-3">
+          <span className="text-4xl">📦</span>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Bienvenido a LogiClear AI
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm">
+            Aún no hay ningún expediente aduanero activo en esta sesión. Sube una carpeta con la Factura Comercial y la DUA para comenzar el cotejo automatizado.
+          </p>
+        </div>
+
+        <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 4. STATE: DATA (Complete Executive Dashboard)
+  // ============================================================================
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              LogiClear AI
+            </h1>
+            <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+              Auditoría Determinista v1.0
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Hash Criptográfico de Auditoría: <span className="font-mono">{report.auditHashSha256.substring(0, 24)}...</span>
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <button
+            type="button"
+            onClick={() => setViewState('empty')}
+            className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          >
+            Nuevo Expediente
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
+          >
+            Exportar Acta de Conciliación
+          </button>
+        </div>
+      </div>
+
+      {/* 1. Executive Metrics Overview */}
+      <MetricsOverview summary={report.summary} />
+
+      {/* 2. Drag-and-Drop Ingestion Drawer */}
+      <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
+
+      {/* 3. Dual 1:1 Comparative Reconciliation View */}
+      <DualReconciliationView
+        summary={report.summary}
+        items={report.items}
+        dossierNumber={report.dossierNumber}
+      />
+
+      {/* 4. Full Landed Cost Breakdown Table */}
+      <LandedCostTable items={report.items} />
+    </div>
+  );
+};

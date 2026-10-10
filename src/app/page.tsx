@@ -329,7 +329,7 @@ export default function HomePage() {
   const currentReport = dossierReports[selectedDossierIndex] ?? dossierReports[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+    <div className="min-h-screen print:min-h-0 print:h-auto print:block print:bg-white bg-slate-50 dark:bg-slate-950 flex flex-col">
       {/* Top Global Navigation Bar (Hidden on Print) */}
       <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -475,7 +475,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer (Hidden on Print) */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-400 print:hidden">
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-400 print:hidden print:border-none print:h-0 print:p-0 print:m-0 print:invisible">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© 2026 LogiClear AI. Plataforma B2B Enterprise — Conciliación de Importaciones & Landed Cost Determinista.</p>
           <p className="font-mono text-[11px]">Certificación Enterprise V4.1 • PostgreSQL RLS • Stripe Billing SAQ A</p>

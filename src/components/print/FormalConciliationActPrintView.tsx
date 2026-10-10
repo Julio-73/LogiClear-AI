@@ -166,43 +166,45 @@ export const FormalConciliationActPrintView: React.FC<FormalConciliationActPrint
         <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-300 font-bold text-[10px] uppercase text-slate-800 tracking-wider">
           Desglose de Costo en Almacén por Partida Arancelaria (Prorrateo Determinista)
         </div>
-        <table className="w-full text-left text-[9px] border-collapse">
+        <table className="table-fixed w-full text-left text-[9px] border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-300 text-slate-700 font-bold uppercase">
-              <th className="py-1.5 px-1.5 text-center w-8">Seq</th>
-              <th className="py-1.5 px-2 w-20">Partida Fact.</th>
-              <th className="py-1.5 px-2 w-20">Partida DUA</th>
-              <th className="py-1.5 px-2">Descripción Mercancía</th>
-              <th className="py-1.5 px-1.5 text-right w-14">Cant.</th>
-              <th className="py-1.5 px-2 text-right w-16">FOB Fact.</th>
-              <th className="py-1.5 px-2 text-right w-16">Flete/Seg.</th>
-              <th className="py-1.5 px-2 text-right w-16">Base CIF</th>
-              <th className="py-1.5 px-1.5 text-right w-12">Ad-Val</th>
-              <th className="py-1.5 px-2 text-right w-14">Gastos Loc.</th>
-              <th className="py-1.5 px-2 text-right w-18 font-bold text-slate-900">Landed Unit.</th>
-              <th className="py-1.5 px-2 text-right w-20 font-bold text-slate-900">Landed Total</th>
-              <th className="py-1.5 px-1 text-center w-12">Estado</th>
+              <th className="py-1.5 px-1 text-center w-[3%]">Seq</th>
+              <th className="py-1.5 px-1.5 w-[8%] whitespace-nowrap">Partida Fact.</th>
+              <th className="py-1.5 px-1.5 w-[8%] whitespace-nowrap">Partida DUA</th>
+              <th className="py-1.5 px-2 w-[23%]">Descripción Mercancía</th>
+              <th className="py-1.5 px-1 text-right w-[6%] whitespace-nowrap">Cant.</th>
+              <th className="py-1.5 px-1.5 text-right w-[8%] whitespace-nowrap">FOB Fact.</th>
+              <th className="py-1.5 px-1.5 text-right w-[7%] whitespace-nowrap">Flete/Seg.</th>
+              <th className="py-1.5 px-1.5 text-right w-[7%] whitespace-nowrap">Base CIF</th>
+              <th className="py-1.5 px-1 text-right w-[6%] whitespace-nowrap">Ad-Val</th>
+              <th className="py-1.5 px-1.5 text-right w-[6%] whitespace-nowrap">Gastos Loc.</th>
+              <th className="py-1.5 px-1.5 text-right w-[8%] whitespace-nowrap font-bold text-slate-900">Landed Unit.</th>
+              <th className="py-1.5 px-1.5 text-right w-[8%] whitespace-nowrap font-bold text-slate-900">Landed Total</th>
+              <th className="py-1.5 px-1 text-center w-[5%] whitespace-nowrap">Estado</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 font-mono">
             {items.map(it => (
               <tr key={it.itemSequence} className="align-middle">
-                <td className="py-1.5 px-1.5 text-center font-bold text-slate-800">#{it.itemSequence}</td>
-                <td className="py-1.5 px-2 text-slate-900 font-semibold">{it.invoiceHsCode}</td>
-                <td className={`py-1.5 px-2 ${it.hsCodeMatches ? 'text-slate-800' : 'text-rose-700 font-bold'}`}>
+                <td className="py-1.5 px-1 text-center font-bold text-slate-800 whitespace-nowrap">#{it.itemSequence}</td>
+                <td className="py-1.5 px-1.5 text-slate-900 font-semibold whitespace-nowrap">{it.invoiceHsCode}</td>
+                <td className={`py-1.5 px-1.5 whitespace-nowrap ${it.hsCodeMatches ? 'text-slate-800' : 'text-rose-700 font-bold'}`}>
                   {it.duaHsCode}
                 </td>
-                <td className="py-1.5 px-2 font-sans truncate max-w-[140px] text-slate-700">{it.commercialDescription}</td>
-                <td className="py-1.5 px-1.5 text-right text-slate-700">{it.quantity} {it.unitOfMeasure}</td>
-                <td className="py-1.5 px-2 text-right">{formatCurrency(it.invoiceTotalFob)}</td>
-                <td className="py-1.5 px-2 text-right">{formatCurrency(it.proratedFreight + it.proratedInsurance)}</td>
-                <td className="py-1.5 px-2 text-right">{formatCurrency(it.cifValue)}</td>
-                <td className="py-1.5 px-1.5 text-right">{formatCurrency(it.adValoremAmount)}</td>
-                <td className="py-1.5 px-2 text-right">{formatCurrency(it.proratedLocalExpenses)}</td>
-                <td className="py-1.5 px-2 text-right font-bold text-slate-900">{formatCurrency(it.landedCostPerUnit, 2)}</td>
-                <td className="py-1.5 px-2 text-right font-bold text-slate-900">{formatCurrency(it.capitalizableLandedCostTotal)}</td>
-                <td className="py-1.5 px-1 text-center font-sans font-bold text-[8px]">
-                  <span className={`px-1 py-0.5 rounded border ${
+                <td className="py-1.5 px-2 font-sans text-slate-700 text-[8.5px] leading-tight break-words">
+                  {it.commercialDescription}
+                </td>
+                <td className="py-1.5 px-1 text-right text-slate-700 whitespace-nowrap">{it.quantity} {it.unitOfMeasure}</td>
+                <td className="py-1.5 px-1.5 text-right whitespace-nowrap">{formatCurrency(it.invoiceTotalFob)}</td>
+                <td className="py-1.5 px-1.5 text-right whitespace-nowrap">{formatCurrency(it.proratedFreight + it.proratedInsurance)}</td>
+                <td className="py-1.5 px-1.5 text-right whitespace-nowrap">{formatCurrency(it.cifValue)}</td>
+                <td className="py-1.5 px-1 text-right whitespace-nowrap">{formatCurrency(it.adValoremAmount)}</td>
+                <td className="py-1.5 px-1.5 text-right whitespace-nowrap">{formatCurrency(it.proratedLocalExpenses)}</td>
+                <td className="py-1.5 px-1.5 text-right font-bold text-slate-900 whitespace-nowrap">{formatCurrency(it.landedCostPerUnit, 2)}</td>
+                <td className="py-1.5 px-1.5 text-right font-bold text-slate-900 whitespace-nowrap">{formatCurrency(it.capitalizableLandedCostTotal)}</td>
+                <td className="py-1.5 px-1 text-center font-sans font-bold text-[8px] whitespace-nowrap">
+                  <span className={`px-1 py-0.5 rounded border inline-block ${
                     it.itemSeverity === 'green' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' :
                     it.itemSeverity === 'yellow' ? 'bg-amber-50 text-amber-800 border-amber-300' :
                     'bg-rose-50 text-rose-800 border-rose-300'

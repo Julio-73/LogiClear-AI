@@ -26,6 +26,7 @@
   }
 
   /* Ocultar elementos interactivos de pantalla */
+  .print\:hidden,
   .print-hidden,
   header,
   footer,
@@ -34,6 +35,13 @@
   .state-switcher,
   .upload-drawer {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
   }
 
   /* Mostrar la vista de impresión formal */

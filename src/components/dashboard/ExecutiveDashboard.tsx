@@ -9,12 +9,18 @@ import { ReconciliationReport } from '@/lib/engine/core_reconciliation_engine';
 
 export type DashboardViewState = 'loading' | 'empty' | 'error' | 'data';
 
+export interface ToastNotice {
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
 export interface ExecutiveDashboardProps {
   initialState?: DashboardViewState;
   initialReport?: ReconciliationReport | null;
   errorMessage?: string;
   onRetry?: () => void;
   onProcessFiles?: (files: UploadedFileItem[]) => Promise<void>;
+  onReportUpdated?: (report: ReconciliationReport) => void;
 }
 
 export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
@@ -22,11 +28,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   initialReport = null,
   errorMessage = 'Ocurrió un error inesperado al procesar el expediente aduanero.',
   onRetry,
-  onProcessFiles
+  onProcessFiles,
+  onReportUpdated
 }) => {
   const [viewState, setViewState] = useState<DashboardViewState>(initialState);
   const [report, setReport] = useState<ReconciliationReport | null>(initialReport);
   const [errorText, setErrorText] = useState<string>(errorMessage);
+  const [isExtracting, setIsExtracting] = useState<boolean>(false);
+  const [toast, setToast] = useState<ToastNotice | null>(null);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -47,6 +56,16 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     setViewState(initialState);
   }, [initialState]);
 
+  // Auto-dismiss Toast after 4.5 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const handleRetry = () => {
     setViewState('loading');
     if (onRetry) {
@@ -58,21 +77,73 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     }
   };
 
+  /**
+   * Resilient Extraction Handler:
+   * Dispatches files to /api/extract, handles serverless fallbacks gracefully,
+   * reactively updates state across KPIs and tables, and smooth-scrolls on mobile.
+   */
   const handleFilesSubmitted = async (files: UploadedFileItem[]) => {
-    setViewState('loading');
+    setIsExtracting(true);
     try {
       if (onProcessFiles) {
         await onProcessFiles(files);
       } else {
-        // Fallback simulation if no external handler injected
-        setTimeout(() => {
-          setViewState(report ? 'data' : 'empty');
-        }, 800);
+        // Build resilient FormData
+        const formData = new FormData();
+        files.forEach(f => {
+          formData.append('files', f.rawFile);
+          formData.append('documentTypes', f.type);
+        });
+
+        const res = await fetch('/api/extract', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          throw new Error(`Servidor respondió con código ${res.status}`);
+        }
+
+        const payload = await res.json();
+
+        if (payload.success && payload.report) {
+          // Reactively mutate local and parent state
+          setReport(payload.report);
+          setViewState('data');
+
+          if (onReportUpdated) {
+            onReportUpdated(payload.report);
+          }
+
+          setToast({
+            type: 'success',
+            message: payload.message || 'Expediente procesado y conciliado con integridad matemática verificada.'
+          });
+
+          // Trigger smooth scroll on mobile & desktop to reveal new calculations
+          setTimeout(() => {
+            const resultsSection = document.getElementById('reconciliation-results-section');
+            if (resultsSection) {
+              resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 150);
+        } else {
+          throw new Error(payload.message || 'No se pudo completar la extracción del expediente.');
+        }
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al procesar archivos';
-      setErrorText(msg);
-      setViewState('error');
+      const msg = err instanceof Error ? err.message : 'Error al conectar con el motor de extracción.';
+      setToast({
+        type: 'error',
+        message: msg
+      });
+      // Prevent UI freeze
+      if (!report) {
+        setErrorText(msg);
+        setViewState('error');
+      }
+    } finally {
+      setIsExtracting(false);
     }
   };
 
@@ -131,7 +202,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           <button
             type="button"
             onClick={handleRetry}
-            className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-sm"
+            className="min-h-[44px] px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-sm"
           >
             Reintentar Conciliación
           </button>
@@ -141,22 +212,56 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   }
 
   // ============================================================================
-  // 3. STATE: EMPTY (No dossier loaded)
+  // 3. STATE: EMPTY (No dossier loaded yet)
   // ============================================================================
   if (viewState === 'empty' || !report) {
     return (
       <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 pb-24 sm:pb-8 space-y-8 print:hidden print-hidden">
-        <div className="text-center py-10 space-y-3">
+        {/* Floating Toast Notification */}
+        {toast && (
+          <div
+            role="status"
+            className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 p-4 rounded-xl shadow-xl border flex items-start space-x-3 transition-all duration-300 ${
+              toast.type === 'success'
+                ? 'bg-emerald-900 text-white border-emerald-700'
+                : toast.type === 'error'
+                ? 'bg-rose-900 text-white border-rose-700'
+                : 'bg-indigo-900 text-white border-indigo-700'
+            }`}
+          >
+            <span className="text-lg shrink-0 mt-0.5">
+              {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
+            </span>
+            <div className="flex-1 text-xs">
+              <p className="font-bold text-sm">
+                {toast.type === 'success' ? 'Extracción Completada' : toast.type === 'error' ? 'Aviso' : 'Información'}
+              </p>
+              <p className="mt-0.5 opacity-90 leading-relaxed">{toast.message}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              className="text-white/70 hover:text-white p-1 text-xs shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="text-center py-8 sm:py-10 space-y-3">
           <span className="text-4xl">📦</span>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
             Bienvenido a LogiClear AI
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm">
+          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-xs sm:text-sm">
             Aún no hay ningún expediente aduanero activo en esta sesión. Sube una carpeta con la Factura Comercial y la DUA para comenzar el cotejo automatizado.
           </p>
         </div>
 
-        <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
+        <DossierFolderUpload
+          onFilesSubmitted={handleFilesSubmitted}
+          isExtracting={isExtracting}
+        />
       </div>
     );
   }
@@ -166,6 +271,38 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // ============================================================================
   return (
     <>
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div
+          role="status"
+          className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 p-4 rounded-xl shadow-xl border flex items-start space-x-3 transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${
+            toast.type === 'success'
+              ? 'bg-emerald-950 text-white border-emerald-700 shadow-emerald-950/40'
+              : toast.type === 'error'
+              ? 'bg-rose-950 text-white border-rose-700 shadow-rose-950/40'
+              : 'bg-indigo-950 text-white border-indigo-700 shadow-indigo-950/40'
+          }`}
+        >
+          <span className="text-xl shrink-0 mt-0.5">
+            {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
+          </span>
+          <div className="flex-1 text-xs">
+            <p className="font-bold text-sm">
+              {toast.type === 'success' ? 'Expediente Conciliado' : toast.type === 'error' ? 'Aviso de Error' : 'Notificación'}
+            </p>
+            <p className="mt-0.5 opacity-90 leading-relaxed">{toast.message}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            className="text-white/70 hover:text-white p-1 text-xs shrink-0"
+            title="Cerrar notificación"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 4.A VISTA INTERACTIVA EN PANTALLA (OCULTA AL IMPRIMIR) */}
       <div
         id="screen-dashboard-container"
@@ -191,14 +328,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <button
               type="button"
               onClick={() => setViewState('empty')}
-              className="px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              className="min-h-[44px] px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center"
             >
               Nuevo Expediente
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm flex items-center space-x-1.5"
+              className="min-h-[44px] px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm flex items-center space-x-1.5"
             >
               <span>📄</span>
               <span className="hidden sm:inline">Exportar</span> Acta de Conciliación
@@ -206,23 +343,29 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </div>
         </div>
 
-        {/* 1. Executive Metrics Overview */}
-        <MetricsOverview summary={report.summary} />
-
-        {/* 2. Drag-and-Drop Ingestion Drawer (Oculto en Impresión) */}
+        {/* Ingestion Drawer with Active Extraction Feedback */}
         <div className="print:hidden">
-          <DossierFolderUpload onFilesSubmitted={handleFilesSubmitted} />
+          <DossierFolderUpload
+            onFilesSubmitted={handleFilesSubmitted}
+            isExtracting={isExtracting}
+          />
         </div>
 
-        {/* 3. Dual 1:1 Comparative Reconciliation View */}
-        <DualReconciliationView
-          summary={report.summary}
-          items={report.items}
-          dossierNumber={report.dossierNumber}
-        />
+        {/* Results Section with ID for Auto-Scroll Target */}
+        <div id="reconciliation-results-section" className="space-y-6 pt-2">
+          {/* 1. Executive Metrics Overview */}
+          <MetricsOverview summary={report.summary} />
 
-        {/* 4. Full Landed Cost Breakdown Table */}
-        <LandedCostTable items={report.items} />
+          {/* 2. Dual 1:1 Comparative Reconciliation View */}
+          <DualReconciliationView
+            summary={report.summary}
+            items={report.items}
+            dossierNumber={report.dossierNumber}
+          />
+
+          {/* 3. Full Landed Cost Breakdown Table */}
+          <LandedCostTable items={report.items} />
+        </div>
       </div>
 
       {/* 4.B BARRA FLOTANTE INFERIOR RESUMEN MÓVIL (VISIBLE SOLO EN MÓVIL < 640PX, OCULTA EN PRINT) */}
@@ -265,7 +408,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           <button
             type="button"
             onClick={() => window.print()}
-            className="p-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 active:bg-indigo-800 shadow-sm"
+            className="min-h-[44px] min-w-[44px] p-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 active:bg-indigo-800 shadow-sm flex items-center justify-center"
             title="Exportar Acta de Conciliación"
           >
             📄

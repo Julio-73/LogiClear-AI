@@ -297,6 +297,7 @@ const duaDossier3: DuaCustomsDeclaration = {
 export default function HomePage() {
   const [selectedDossierIndex, setSelectedDossierIndex] = useState<number>(0);
   const [activeViewState, setActiveViewState] = useState<DashboardViewState>('data');
+  const [customReport, setCustomReport] = useState<ReconciliationReport | null>(null);
 
   // Compute reports dynamically via CoreReconciliationEngine
   const dossierReports: ReconciliationReport[] = useMemo(() => {
@@ -326,7 +327,13 @@ export default function HomePage() {
     ];
   }, []);
 
-  const currentReport = dossierReports[selectedDossierIndex] ?? dossierReports[0];
+  const currentReport = customReport ?? (dossierReports[selectedDossierIndex] ?? dossierReports[0]);
+
+  const handleSelectDossier = (index: number) => {
+    setSelectedDossierIndex(index);
+    setCustomReport(null);
+    setActiveViewState('data');
+  };
 
   return (
     <div className="min-h-screen print:min-h-0 print:h-auto print:block print:bg-white bg-slate-50 dark:bg-slate-950 flex flex-col">
@@ -351,14 +358,16 @@ export default function HomePage() {
           {/* Quick Expediente Switcher */}
           <div className="hidden md:flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-medium">
             <span className="px-2 text-slate-500 text-[11px]">Expediente:</span>
+            {customReport && (
+              <span className="px-3 py-1 rounded-md bg-indigo-600 text-white font-bold shadow-xs">
+                ⚡ {customReport.dossierNumber} (En Vivo)
+              </span>
+            )}
             <button
               type="button"
-              onClick={() => {
-                setSelectedDossierIndex(0);
-                setActiveViewState('data');
-              }}
+              onClick={() => handleSelectDossier(0)}
               className={`px-3 py-1 rounded-md transition ${
-                selectedDossierIndex === 0 && activeViewState === 'data'
+                selectedDossierIndex === 0 && !customReport && activeViewState === 'data'
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -367,12 +376,9 @@ export default function HomePage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setSelectedDossierIndex(1);
-                setActiveViewState('data');
-              }}
+              onClick={() => handleSelectDossier(1)}
               className={`px-3 py-1 rounded-md transition ${
-                selectedDossierIndex === 1 && activeViewState === 'data'
+                selectedDossierIndex === 1 && !customReport && activeViewState === 'data'
                   ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -381,12 +387,9 @@ export default function HomePage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setSelectedDossierIndex(2);
-                setActiveViewState('data');
-              }}
+              onClick={() => handleSelectDossier(2)}
               className={`px-3 py-1 rounded-md transition ${
-                selectedDossierIndex === 2 && activeViewState === 'data'
+                selectedDossierIndex === 2 && !customReport && activeViewState === 'data'
                   ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -470,7 +473,13 @@ export default function HomePage() {
         <ExecutiveDashboard
           initialState={activeViewState}
           initialReport={currentReport}
-          onRetry={() => setActiveViewState('data')}
+          onRetry={() => {
+            setActiveViewState('data');
+            setCustomReport(null);
+          }}
+          onReportUpdated={(newReport) => {
+            setCustomReport(newReport);
+          }}
         />
       </main>
 
